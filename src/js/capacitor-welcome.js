@@ -1,142 +1,121 @@
-import { SplashScreen } from '@capacitor/splash-screen';
 import { Camera } from '@capacitor/camera';
 
-window.customElements.define(
-  'capacitor-welcome',
-  class extends HTMLElement {
-    constructor() {
-      super();
-
-      SplashScreen.hide();
-
-      const root = this.attachShadow({ mode: 'open' });
-
-      root.innerHTML = `
-    <style>
-      :host {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-      h1, h2, h3, h4, h5 {
-        text-transform: uppercase;
-      }
-      .button {
-        display: inline-block;
-        padding: 10px;
-        background-color: #73B5F6;
-        color: #fff;
-        font-size: 0.9em;
-        border: 0;
-        border-radius: 3px;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      main {
-        padding: 15px;
-      }
-      main hr { height: 1px; background-color: #eee; border: 0; }
-      main h1 {
-        font-size: 1.4em;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      main h2 {
-        font-size: 1.1em;
-      }
-      main h3 {
-        font-size: 0.9em;
-      }
-      main p {
-        color: #333;
-      }
-      main pre {
-        white-space: pre-line;
-      }
-    </style>
-    <div>
-      <capacitor-welcome-titlebar>
-        <h1>Capacitor</h1>
-      </capacitor-welcome-titlebar>
-      <main>
-        <p>
-          Capacitor makes it easy to build powerful apps for the app stores, mobile web (Progressive Web Apps), and desktop, all
-          with a single code base.
-        </p>
-        <h2>Getting Started</h2>
-        <p>
-          You'll probably need a UI framework to build a full-featured app. Might we recommend
-          <a target="_blank" href="http://ionicframework.com/">Ionic</a>?
-        </p>
-        <p>
-          Visit <a href="https://capacitorjs.com">capacitorjs.com</a> for information
-          on using native features, building plugins, and more.
-        </p>
-        <a href="https://capacitorjs.com" target="_blank" class="button">Read more</a>
-        <h2>Tiny Demo</h2>
-        <p>
-          This demo shows how to call Capacitor plugins. Say cheese!
-        </p>
-        <p>
-          <button class="button" id="take-photo">Take Photo</button>
-        </p>
-        <p>
-          <img id="image" style="max-width: 100%">
-        </p>
-      </main>
-    </div>
-    `;
-    }
-
-    connectedCallback() {
-      const self = this;
-
-      self.shadowRoot.querySelector('#take-photo').addEventListener('click', async function (e) {
-        try {
-          const photo = await Camera.getPhoto({
-            resultType: 'uri',
-          });
-
-          const image = self.shadowRoot.querySelector('#image');
-          if (!image) {
-            return;
-          }
-
-          image.src = photo.webPath;
-        } catch (e) {
-          console.warn('User cancelled', e);
+window.customElements.define("app-toolbar", class extends HTMLElement {
+  constructor() {
+    super();
+    const root = this.attachShadow({ mode: 'open' });
+    root.innerHTML = `
+      <style>
+        :host {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          min-height: env(safe-area-inset-top);
+          max-height: env(safe-area-inset-top);
+          background-color: #73B5F6;
         }
-      });
-    }
-  }
-);
-
-window.customElements.define(
-  'capacitor-welcome-titlebar',
-  class extends HTMLElement {
-    constructor() {
-      super();
-      const root = this.attachShadow({ mode: 'open' });
-      root.innerHTML = `
-    <style>
-      :host {
-        position: relative;
-        display: block;
-        padding: 15px 15px 15px 15px;
-        text-align: center;
-        background-color: #73B5F6;
-      }
-      ::slotted(h1) {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-        font-size: 0.9em;
-        font-weight: 600;
-        color: #fff;
-      }
-    </style>
-    <slot></slot>
+      </style>
+      <div></div>
     `;
+  }
+});
+
+window.customElements.define("camera-demo", class extends HTMLElement {
+
+  constructor() {
+    super();
+    const root = this.attachShadow({ mode: 'open' });
+    root.innerHTML = `
+      <style>
+        :host {
+          overflow-y: auto;
+        }
+
+        button {
+          display: inline-block;
+          padding: 10px;
+          background-color: #73B5F6;
+          color: #fff;
+          font-size: 0.9em;
+          border: 0;
+          border-radius: 3px;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        main {
+          padding: env(safe-area-inset-top) 1rem 4rem 1rem;
+        }
+
+        .code {
+          font-family: monospace;
+        }
+
+        #images {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          margin-top: 2rem;
+        }
+
+        #images img {
+          width: 33%;
+          aspect-ratio: 1/1;
+        }
+      </style>
+
+      <div>
+        <main>
+          <p>
+            Demo app to show that results from <span class="code">Camera.pickImages</span> are not stable, as described in issue <a href="https://github.com/ionic-team/capacitor-plugins/issues/1950">#1950</a>.
+          </p>
+          <p>
+            Steps to reproduce the issue:
+            <ul>
+              <li>Click button "Pick images"</li>
+              <li>Allow full access to gallery when asked</li>
+              <li>
+                Select a bunch of images. The more you select, the more obvious the problm is.<br>
+                <b>Note: keep in mind in which order you select those images!</b>
+              </li>
+              <li>Wait until selected images are shown below the button</li>
+              <li>
+                Take a look at displayed images and, more specifically, the order in which they are shown.
+                You should see them in a random order and, if you repeat this process multiple times while keeping the same selection order, you should see that results are shown in different orders each time.<br>
+                <b>Note: you may need to repeat this process multiple times, especially if you are using just a few images</b>
+              </li>
+            </ul>
+          </p>
+          <button id="pickImages">Pick images</button>
+
+          <div id="images"></div>
+        </main>
+      </div>
+    `;
+  }
+
+
+  connectedCallback() {
+    this.shadowRoot.querySelector("#pickImages").addEventListener("click", () => this.pickImages());
+  }
+
+  async pickImages() {
+    const photosDiv = this.shadowRoot.querySelector("#images");
+    photosDiv.innerHTML = "";
+
+    try {
+      const { photos } = await Camera.pickImages({
+        quality: 100,
+      });
+
+      console.log(photos);
+
+      for (const photo of photos) {
+        photosDiv.innerHTML += `<img src="${photo.webPath}"></img>`;
+      }
+    } catch (e) {
+      alert('User cancelled');
     }
   }
-);
+});
